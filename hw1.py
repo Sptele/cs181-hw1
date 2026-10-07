@@ -214,14 +214,15 @@ def _(np):
             image.shape[0] + kernel.shape[0] - 1,
             image.shape[1] + kernel.shape[1] - 1,
         )
+
         output = np.empty(output_shape, dtype=float)
 
         k_offsets = list(range(-(len(kernel)//2), len(kernel)//2+1))
 
         # EDIT BELOW: flip kernel and accumulate every shifted product in output.
-        for i in range(len(image)):
-            for j in range(len(image[i])):
-                for ki, oi in enumerate(k_offsets):
+        for i in range(len(output)):
+            for j in range(len(output[i])):
+                for ki, oi in enumerate(k_offsets): 
                     for kj, oj in enumerate(k_offsets):
                         output[i][j] += 0 if i+oi < 0 or i+oi >= len(image) or j+oj < 0 or j+oj >= len(image) else image[i + oi][j + oj] * kernel[ki][kj]
 
@@ -353,7 +354,7 @@ def _(blur_and_downsample, np):
             pyramid.append(blur_and_downsample(pyramid[i], kernel))
 
         output = [el for el in pyramid if el.shape in level_shapes]
-    
+
         return output
 
     return (build_gaussian_pyramid,)
@@ -384,8 +385,6 @@ def build_laplacian_pyramid(np):
         for idx, lvl in enumerate(gaussian_pyramid):
             img_scale = gaussian_pyramid[0][::incs[idx], ::incs[idx]]
             pyramid.append(np.empty((img_scale.shape[0], img_scale.shape[1]), dtype=float))
-
-            print(img_scale.shape[0])
 
             for i in range(img_scale.shape[0]):
                 for j in range(img_scale.shape[1]):
