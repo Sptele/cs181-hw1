@@ -156,9 +156,11 @@ def _(mo):
         \\
 
         S_y * I_1 = \begin{bmatrix}
-        [-9] & -12 & -9 \\
-        -15 & -20 & -15 \\
-        9 & 12 & 9
+        -1 & -3 & -4 & -3 & -1 \\
+        -3 & [-9] & -12 & -9 & -3 \\
+        -5 & -15 & -20 & -15 & -5\\
+        3 & 9 & 12 & 9 & 3 \\
+        6 & 18 & 24 & 18 & 6
         \end{bmatrix}
 
         \\
@@ -224,6 +226,8 @@ def _(np):
 
         for y in range(output_shape[0]):
             for x in range(output_shape[1]):
+                output[y,x] = 0
+
                 for ky in offsets:
                     for kx in offsets:
                         img_y = y-ky-offset
@@ -247,8 +251,8 @@ def _(np):
 @app.cell(hide_code=True)
 def _(convolve2d_full, image_1, image_2, laplacian, sobel_x, sobel_y):
     try:
-        convolve2d_full(image_1, sobel_x)
-        convolve2d_full(image_1, sobel_y)
+        print(convolve2d_full(image_1, sobel_x))
+        print(convolve2d_full(image_1, sobel_y))
         convolve2d_full(image_2, laplacian)
     except Exception as error:
         print(f"Problem 1(c) test is not ready: {error}")
@@ -402,6 +406,8 @@ def build_laplacian_pyramid(np):
             for i in range(img_scale.shape[0]):
                 for j in range(img_scale.shape[1]):
                     pyramid[idx][i][j] = lvl[i][j] - img_scale[i][j]
+    
+        pyramid.append(gaussian_pyramid[0][::incs[-1], ::incs[-1]])
 
         return pyramid
 
