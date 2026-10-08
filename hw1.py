@@ -145,9 +145,11 @@ def _(mo):
     Your response to 1(a)
 
     $$S_x * I_1 = \begin{bmatrix}
-        [-6] & 0 & 6 \\
-        -13 & 0 & 13 \\
-        -15 & 0 & 15
+        -1 & -1 & 0 & 1 & 1 \\
+        -5 & [-5] & 0 & 5 & 5 \\
+        -13 & -13 & 0 & 13 & 13 \\
+        -15 & -15 & 0 & 15 & 15 \\
+        -6 & -6 & 0 & 6 & 6
         \end{bmatrix}
 
         \\
@@ -217,32 +219,25 @@ def _(np):
 
         output = np.empty(output_shape, dtype=float)
 
-        k_offsets = list(range(-(len(kernel)//2), len(kernel)//2+1))
+        offsets = range(-(len(kernel)//2), len(kernel)//2)
+        offset = offsets[-1]
 
-        # loop through the output [0..k]
-        # we offset coords by -(k-1)/2 and pass into a function which automatically zeropads if a coord is less than zero
-        # otherwise convolute
+        for y in range(output_shape[0]):
+            for x in range(output_shape[1]):
+                for ky in offsets:
+                    for kx in offsets:
+                        img_y = y-ky-offset
+                        img_x = x-kx-offset
+
+                        if img_y < 0 or img_x < 0 or img_y >= image.shape[0] or img_x >= image.shape[1]:
+                            output[y, x] += 0 # catharthic
+                        else: output[y, x] += kernel[ky+offset, kx+offset] * image[img_y, img_x]
+    
+        return output
+
+                    
 
     
-        offset = -len(kernel)//2
-
-        def zero_pad(i, j):
-            if i < 0 or j < 0: return 0
-            if i >= len(image) or j >= len(image): return 0
-        
-            return image[i, j]
-
-        # (0,0), (1,1) -> -1 + 1 = -1
-        # (4,4), (0,0) -> -1 + 
-
-        # EDIT BELOW: flip kernel and accumulate every shifted product in output.
-        for i in range(len(output)):
-            for j in range(len(output[i])):
-                for ki, oi in enumerate(k_offsets): 
-                    for kj, oj in enumerate(k_offsets):
-                        output[i, j] += kernel[ki, kj]*zero_pad(offset+i-oi,offset+j-oj)
-
-        return output
 
     return (convolve2d_full,)
 
