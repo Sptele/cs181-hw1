@@ -251,8 +251,8 @@ def _(np):
 @app.cell(hide_code=True)
 def _(convolve2d_full, image_1, image_2, laplacian, sobel_x, sobel_y):
     try:
-        print(convolve2d_full(image_1, sobel_x))
-        print(convolve2d_full(image_1, sobel_y))
+        convolve2d_full(image_1, sobel_x)
+        convolve2d_full(image_1, sobel_y)
         convolve2d_full(image_2, laplacian)
     except Exception as error:
         print(f"Problem 1(c) test is not ready: {error}")
@@ -341,7 +341,6 @@ def blur_and_downsample(convolve2d_full):
         # EDIT BELOW: call convolve2d_full, crop to image.shape, then subsample.
         r = convolve2d_full(image, kernel)
 
-
         return r[kernel.shape[0]//2:(r.shape[0]-(kernel.shape[0]//2)):2, kernel.shape[1]//2:(r.shape[1]-(kernel.shape[1]//2)):2]
     
         # Document your boundary convention.
@@ -405,13 +404,13 @@ def build_laplacian_pyramid(np):
 
         # 512, 256, 128, 32
 
-        for idx, lvl in enumerate(gaussian_pyramid):
+        for idx, lvl in enumerate(gaussian_pyramid[1:]):
             img_scale = gaussian_pyramid[0][::incs[idx], ::incs[idx]]
             pyramid.append(np.empty((img_scale.shape[0], img_scale.shape[1]), dtype=float))
 
             for i in range(img_scale.shape[0]):
                 for j in range(img_scale.shape[1]):
-                    pyramid[idx][i,j] = img_scale[i,j] - lvl[i, j]
+                    pyramid[idx][i,j] = lvl[i, j] - img_scale[i,j]
     
         return pyramid
 
