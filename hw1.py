@@ -227,17 +227,20 @@ def _(np):
         offset = -len(kernel)//2
 
         def zero_pad(i, j):
-            if i < 0 or i >= (len(image) + offset) or j < 0 or j >= (len(image) + offset): return 0
+            if i < 0 or j < 0: return 0
+            if i >= len(image) or j >= len(image): return 0
         
             return image[i, j]
 
+        # (0,0), (1,1) -> -1 + 1 = -1
+        # (4,4), (0,0) -> -1 + 
 
         # EDIT BELOW: flip kernel and accumulate every shifted product in output.
         for i in range(len(output)):
             for j in range(len(output[i])):
                 for ki, oi in enumerate(k_offsets): 
                     for kj, oj in enumerate(k_offsets):
-                        output[i][j] += zero_pad(i+offset+oi, j+offset+oj)*kernel[ki][kj]
+                        output[i, j] += kernel[ki, kj]*zero_pad(offset+i-oi,offset+j-oj)
 
         return output
 
