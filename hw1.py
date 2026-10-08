@@ -219,7 +219,7 @@ def _(np):
 
         output = np.empty(output_shape, dtype=float)
 
-        offsets = range(-(len(kernel)//2), len(kernel)//2)
+        offsets = range(-(len(kernel)//2), len(kernel)//2+1)
         offset = offsets[-1]
 
         for y in range(output_shape[0]):
@@ -230,8 +230,10 @@ def _(np):
                         img_x = x-kx-offset
 
                         if img_y < 0 or img_x < 0 or img_y >= image.shape[0] or img_x >= image.shape[1]:
-                            output[y, x] += 0 # catharthic
-                        else: output[y, x] += kernel[ky+offset, kx+offset] * image[img_y, img_x]
+                            pass
+                        else: 
+                            output[y, x] += kernel[ky+offset, kx+offset] * image[img_y, img_x]
+            
     
         return output
 
