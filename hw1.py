@@ -219,12 +219,25 @@ def _(np):
 
         k_offsets = list(range(-(len(kernel)//2), len(kernel)//2+1))
 
+        # loop through the output [0..k]
+        # we offset coords by -(k-1)/2 and pass into a function which automatically zeropads if a coord is less than zero
+        # otherwise convolute
+
+    
+        offset = -len(kernel)//2
+
+        def zero_pad(i, j):
+            if i < 0 or i >= (len(image) + offset) or j < 0 or j >= (len(image) + offset): return 0
+        
+            return image[i, j]
+
+
         # EDIT BELOW: flip kernel and accumulate every shifted product in output.
         for i in range(len(output)):
             for j in range(len(output[i])):
                 for ki, oi in enumerate(k_offsets): 
                     for kj, oj in enumerate(k_offsets):
-                        output[i][j] += 0 if i+oi < 0 or i+oi >= len(image) or j+oj < 0 or j+oj >= len(image) else image[i + oi][j + oj] * kernel[ki][kj]
+                        output[i][j] += zero_pad(i+offset+oi, j+offset+oj)*kernel[ki][kj]
 
         return output
 
