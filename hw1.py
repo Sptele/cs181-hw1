@@ -340,7 +340,7 @@ def blur_and_downsample(convolve2d_full):
         """Blur image with kernel, then reduce each spatial dimension by two."""
         # EDIT BELOW: call convolve2d_full, crop to image.shape, then subsample.
         r = convolve2d_full(image, kernel)
-        # crop kernel.shape[0] // 2
+
 
         return r[kernel.shape[0]//2:(r.shape[0]-(kernel.shape[0]//2)):2, kernel.shape[1]//2:(r.shape[1]-(kernel.shape[1]//2)):2]
     
@@ -411,7 +411,7 @@ def build_laplacian_pyramid(np):
 
             for i in range(img_scale.shape[0]):
                 for j in range(img_scale.shape[1]):
-                    pyramid[idx][i,j] = lvl[i,j] - img_scale[i,j]
+                    pyramid[idx][i,j] = img_scale[i,j] - lvl[i, j]
     
         return pyramid
 
