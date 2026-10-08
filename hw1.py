@@ -339,10 +339,13 @@ def blur_and_downsample(convolve2d_full):
     def blur_and_downsample(image, kernel):
         """Blur image with kernel, then reduce each spatial dimension by two."""
         # EDIT BELOW: call convolve2d_full, crop to image.shape, then subsample.
-        image = convolve2d_full(image, kernel)[:image.shape[0], :image.shape[1]]
-        # Document your boundary convention.
-        return image[::2, ::2]
+        r = convolve2d_full(image, kernel)
+        # crop kernel.shape[0] // 2
 
+        return r[kernel.shape[0]//2:(r.shape[0]-(kernel.shape[0]//2)):2, kernel.shape[1]//2:(r.shape[1]-(kernel.shape[1]//2)):2]
+    
+        # Document your boundary convention.
+        # Zero-padding
 
     return (blur_and_downsample,)
 
@@ -364,15 +367,18 @@ def _(blur_and_downsample, np):
             dtype=float,
         ) / 256
         pyramid = [image]
-
+        queue = [image]
         # EDIT BELOW: call blur_and_downsample until each requested level is reached.
         # Keep levels in the same order as level_shapes.
         for i in range(len(level_shapes)+1):
-            pyramid.append(blur_and_downsample(pyramid[i], kernel))
+            o = blur_and_downsample(queue[i], kernel)
 
-        output = [el for el in pyramid if el.shape in level_shapes]
+            queue.append(o)
 
-        return output
+            if o.shape in level_shapes:
+                pyramid.append(o)
+
+        return pyramid
 
     return (build_gaussian_pyramid,)
 
@@ -405,10 +411,8 @@ def build_laplacian_pyramid(np):
 
             for i in range(img_scale.shape[0]):
                 for j in range(img_scale.shape[1]):
-                    pyramid[idx][i][j] = lvl[i][j] - img_scale[i][j]
+                    pyramid[idx][i,j] = lvl[i,j] - img_scale[i,j]
     
-        pyramid.append(gaussian_pyramid[0][::incs[-1], ::incs[-1]])
-
         return pyramid
 
     return (build_laplacian_pyramid,)
