@@ -504,18 +504,40 @@ def harris_corners(convolve2d_full, np, sobel_x, sobel_y):
         s_x = crop_convolve(image, sobel_x)
         s_y = crop_convolve(image, sobel_y)
 
-        kernel = np.array(
-            [
-                [1, 2, 1],
-                [2, 4, 2],
-                [1, 2, 1],
-            ],
-            dtype=float,
-        ) / 16
+        # kernel = np.array(
+        #     [
+        #         [16, 24, 16],
+        #         [24, 36, 24],
+        #         [16, 24, 16],
+        #     ],
+        #     dtype=float,
+        # ) / 256
 
-        Sx2 = crop_convolve(s_x ** 2, kernel)
-        Sy2 = crop_convolve(s_y ** 2, kernel)
-        Sxy = crop_convolve(s_x*s_y, kernel)
+        def smooth(img):
+            def averaged(i, j):
+                avg = 0
+
+                for io in [-1, 0, 1]:
+                    for jo in [-1, 0, 1]:
+                        if i+io < 0 or j+jo < 0 or i+io >= img.shape[0] or j+jo >= img.shape[1]:
+                            continue
+
+                        else:
+                            avg += img[i+io, j+jo]
+
+
+                return avg / 9
+
+            for i in range(img.shape[0]):
+                for j in range(img.shape[1]):
+                    img[i, j] = averaged(i, j)
+
+            return img
+
+
+        Sx2 = smooth(s_x ** 2)
+        Sy2 = smooth(s_y ** 2)
+        Sxy = smooth(s_x*s_y)
     
 
         rtnr = []
@@ -537,7 +559,7 @@ def harris_corners(convolve2d_full, np, sobel_x, sobel_y):
 @app.cell
 def _(harris_corners, kavli_image, plt):
     # EDIT BELOW: choose a threshold, then plot the detected corners.
-    corners = harris_corners(kavli_image, threshold=500)
+    corners = harris_corners(kavli_image, threshold=900)
     # print(corners)
     plt.imshow(kavli_image, cmap="gray")
     plt.axis("off")
