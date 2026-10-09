@@ -162,16 +162,11 @@ def _(mo):
         3 & 9 & 12 & 9 & 3 \\
         6 & 18 & 24 & 18 & 6
         \end{bmatrix}
-
-        \\
-        \\
-
-        M = \begin{bmatrix}
-        10.186 & 12 & 10.816 \\
-        19.849 & 20 & 19.849 \\
-        17.492 & 12 & 17.492
-        \end{bmatrix}
         $$
+
+        In the X-convolution output, there is a vertical edge centered around the 3rd column, because the intensity changes dramatically from the 2nd column to the 3rd column to the 4th column; this change indicates a large derivative that is indicative of an edge.
+
+        In the Y-convolution output, there is a horizontal edge between the third and fourth rows, because the intensity changes dramatically from the 3rd to the 4th row. This change indicates a large derivative that is indicative of an edge.
     """)
     return
 
@@ -237,13 +232,9 @@ def _(np):
                             pass
                         else: 
                             output[y, x] += kernel[ky+offset, kx+offset] * image[img_y, img_x]
-            
-    
+        
+
         return output
-
-                    
-
-    
 
     return (convolve2d_full,)
 
@@ -342,10 +333,9 @@ def blur_and_downsample(convolve2d_full):
         r = convolve2d_full(image, kernel)
 
         return r[kernel.shape[0]//2:(r.shape[0]-(kernel.shape[0]//2)):2, kernel.shape[1]//2:(r.shape[1]-(kernel.shape[1]//2)):2]
-    
+
         # Document your boundary convention.
         # Zero-padding
-
     return (blur_and_downsample,)
 
 
@@ -397,22 +387,47 @@ def build_laplacian_pyramid(np):
     def build_laplacian_pyramid(gaussian_pyramid):
         """Return Laplacian levels followed by the coarsest Gaussian residual."""
         pyramid = []
+        rvr = gaussian_pyramid[::-1]
 
         # EDIT BELOW: construct the Laplacian level at each requested resolution,
         # then append the final coarsest Gaussian level.
-        incs = [1, 2, 4, 16]
 
-        # 512, 256, 128, 32
+        # start at the smallest and upscale by inserting 0s. then subtract the next layer from the upscaled (maybe reverse)
 
-        for idx, lvl in enumerate(gaussian_pyramid[1:]):
-            img_scale = gaussian_pyramid[0][::incs[idx], ::incs[idx]]
-            pyramid.append(np.empty((img_scale.shape[0], img_scale.shape[1]), dtype=float))
+        print(len(rvr))
 
-            for i in range(img_scale.shape[0]):
-                for j in range(img_scale.shape[1]):
-                    pyramid[idx][i,j] = lvl[i, j] - img_scale[i,j]
+        for idx in range(len(rvr)-1):
+            scale = rvr[idx+1].shape[0] // rvr[idx].shape[0]
+
+            print("a")
+
+            gp = rvr[idx]
+            new_size = gp.shape[0]*scale
+            o = np.zeros((new_size, new_size), dtype=float)
+
+            print("b")
+        
+
+            for i in range(0, new_size, scale):
+                for j in range(0, new_size, scale):
+                    o[i, j] = gp[i//scale, j//scale]
+
+            print("c")
+        
+
+
+            for i in range(new_size):
+                for j in range(new_size):
+                    o[i, j] = o[i,j] - rvr[idx+1][i, j]
+
+            print("d")
+
+            pyramid.append(o)
+
+        rtnr = pyramid[::-1]
+        rtnr.append(rvr[0])
     
-        return pyramid
+        return rtnr
 
     return (build_laplacian_pyramid,)
 
