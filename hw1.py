@@ -394,34 +394,20 @@ def build_laplacian_pyramid(np):
 
         # start at the smallest and upscale by inserting 0s. then subtract the next layer from the upscaled (maybe reverse)
 
-        print(len(rvr))
-
         for idx in range(len(rvr)-1):
             scale = rvr[idx+1].shape[0] // rvr[idx].shape[0]
 
-            print("a")
-
             gp = rvr[idx]
             new_size = gp.shape[0]*scale
-            o = np.zeros((new_size, new_size), dtype=float)
-
-            print("b")
-        
+            o = np.zeros((new_size, new_size), dtype=float)        
 
             for i in range(0, new_size, scale):
                 for j in range(0, new_size, scale):
                     o[i, j] = gp[i//scale, j//scale]
 
-            print("c")
-        
-
-
             for i in range(new_size):
                 for j in range(new_size):
-                    o[i, j] = o[i,j] - rvr[idx+1][i, j]
-
-            print("d")
-
+                    o[i, j] = rvr[idx+1][i, j] - o[i, j]
             pyramid.append(o)
 
         rtnr = pyramid[::-1]
