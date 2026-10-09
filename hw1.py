@@ -186,11 +186,15 @@ def _(mo):
     mo.md(r"""
     $$
     L * I_2 = \begin{bmatrix}
-        [-20] & 80 & 70 \\
-        80 & -180 & -190 \\
-        70 & -190 & -200
+        0 & 10 & 10 & 10 & 0 \\
+        10 & [-20] & 80 & 70 & 10 \\
+        10 & 80 & -180 & -190 & 100 \\
+        10 & 70 & -190 & -200 & 100 \\
+        0 & 10 & 100 & 100 & 0
         \end{bmatrix}
     $$
+
+    There is a corner around the origin, specifically in the middle of the 2x2 grid formed with the origin in the top left. There, multiple edges (indicated by zero-crossings) intersect to form a corner; there are zero-crossings in multiple directions there.
     """)
     return
 
@@ -334,8 +338,8 @@ def blur_and_downsample(convolve2d_full):
 
         return r[kernel.shape[0]//2:(r.shape[0]-(kernel.shape[0]//2)):2, kernel.shape[1]//2:(r.shape[1]-(kernel.shape[1]//2)):2]
 
-        # Document your boundary convention.
-        # Zero-padding
+        # Document your boundary convention:
+        # Zero-padding; when we get out of bounds, we just respond with a zero
     return (blur_and_downsample,)
 
 
@@ -504,15 +508,6 @@ def harris_corners(convolve2d_full, np, sobel_x, sobel_y):
         s_x = crop_convolve(image, sobel_x)
         s_y = crop_convolve(image, sobel_y)
 
-        # kernel = np.array(
-        #     [
-        #         [16, 24, 16],
-        #         [24, 36, 24],
-        #         [16, 24, 16],
-        #     ],
-        #     dtype=float,
-        # ) / 256
-
         def smooth(img):
             def averaged(i, j):
                 avg = 0
@@ -559,8 +554,13 @@ def harris_corners(convolve2d_full, np, sobel_x, sobel_y):
 @app.cell
 def _(harris_corners, kavli_image, plt):
     # EDIT BELOW: choose a threshold, then plot the detected corners.
-    corners = harris_corners(kavli_image, threshold=900)
-    # print(corners)
+    corners = harris_corners(kavli_image, threshold=100000)
+
+    # It's interesting how the algorithm weighs what the 'strongest' corners are (different than what I would say):
+    # Seems to pick up the brightest, closest, and most well defined corners
+    # also picks up false corners given by the intersection of circular objects & poles
+    # Not a perfect method but fairly good!
+
     plt.imshow(kavli_image, cmap="gray")
     plt.axis("off")
     plt.scatter(corners[:, 1], corners[:, 0], c="r", s=10)
