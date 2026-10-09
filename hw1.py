@@ -493,47 +493,43 @@ def harris_corners(convolve2d_full, np, sobel_x, sobel_y):
         """Return up to max_corners Harris corners as (row, column) locations."""
         # EDIT BELOW: write your complete detector and any helpers here.
 
+        def crop_convolve(image, kernel):
+            r = convolve2d_full(image, kernel)
+
+            return r[kernel.shape[0]//2:(r.shape[0]-(kernel.shape[0]//2)), kernel.shape[1]//2:(r.shape[1]-(kernel.shape[1]//2))]
+
+
         # We will use Sobel X and Sobel Y
 
-        s_x = convolve2d_full(image, sobel_x)[:image.shape[0], :image.shape[1]]
-        s_y = convolve2d_full(image, sobel_y)[:image.shape[0], :image.shape[1]]
+        s_x = crop_convolve(image, sobel_x)
+        s_y = crop_convolve(image, sobel_y)
 
-        def smooth(img):
-            def averaged(i, j):
-                avg = 0
+        kernel = np.array(
+            [
+                [1, 2, 1],
+                [2, 4, 2],
+                [1, 2, 1],
+            ],
+            dtype=float,
+        ) / 16
 
-                for io in [-1, 0, 1]:
-                    for jo in [-1, 0, 1]:
-                        if i+io < 0 or j+jo < 0 or i+io >= img.shape[0] or j+jo >= img.shape[1]:
-                            continue
-                        else:
-                            avg += img[i+io, j+jo]
-
-                return avg / 9
-
-            for i in range(img.shape[0]):
-                for j in range(img.shape[1]):
-                    img[i, j] = averaged(i, j)
-
-            return img
-
-        Sx2 = smooth(s_x ** 2)
-        Sy2 = smooth(s_x ** 2)
-        Sxy = smooth(s_x * s_y)
+        Sx2 = crop_convolve(s_x ** 2, kernel)
+        Sy2 = crop_convolve(s_y ** 2, kernel)
+        Sxy = crop_convolve(s_x*s_y, kernel)
+    
 
         rtnr = []
 
         for i in range(s_x.shape[0]):
-            for j in range(s_y.shape[1]):
-                R: float = (Sx2[i,j]*Sy2[i,j]-Sxy[i,j]**2) - k*((Sx2[i,j]+Sy2[i,j])**2)
-            
-            
-                if abs(R) >= threshold:
+            for j in range(s_x.shape[1]):
+                R = (Sx2[i,j]*Sy2[i,j]-Sxy[i,j]**2) - k*((Sx2[i,j]+Sy2[i,j])**2)
+               
+                if R >= threshold:
                     rtnr.append((R, i, j))
 
-        rtnr.sort()
+        rtnr.sort(reverse=True)
 
-        return np.array([tup[1:] for tup in rtnr[:max_corners]])    
+        return np.array(rtnr[:max_corners])[:,1:]  
 
     return (harris_corners,)
 
@@ -541,7 +537,7 @@ def harris_corners(convolve2d_full, np, sobel_x, sobel_y):
 @app.cell
 def _(harris_corners, kavli_image, plt):
     # EDIT BELOW: choose a threshold, then plot the detected corners.
-    corners = harris_corners(kavli_image, threshold=1000)
+    corners = harris_corners(kavli_image, threshold=500)
     # print(corners)
     plt.imshow(kavli_image, cmap="gray")
     plt.axis("off")
